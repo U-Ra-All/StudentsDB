@@ -61,13 +61,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 Util.KEY_ID + "=?", new String[] {String.valueOf(id)},
                 null, null,
                 null, null);
+        Student student = new Student();
         if (cursor != null) {
-            cursor.moveToFirst();
+            try {
+                cursor.moveToFirst();
+                student = new Student(Integer.parseInt(cursor.getString(0)),
+                        cursor.getString(1), cursor.getString(2),
+                        cursor.getString(3), cursor.getString(4));
+            } finally {
+                cursor.close();
+            }
+
         }
 
-        Student student = new Student(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1), cursor.getString(2),
-                cursor.getString(3), cursor.getString(4));
+
 
         return student;
     }
@@ -80,16 +87,21 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String selectAllStudents = "SELECT * FROM " + Util.TABLE_NAME;
         Cursor cursor = db.rawQuery(selectAllStudents, null);
         if (cursor.moveToFirst()) {
-            do {
-                Student student = new Student();
-                student.setId(Integer.parseInt(cursor.getString(0)));
-                student.setDepartment(cursor.getString(1));
-                student.setFirstName(cursor.getString(2));
-                student.setLastName(cursor.getString(3));
-                student.setAverageMark(cursor.getString(4));
+            try {
+                do {
+                    Student student = new Student();
+                    student.setId(Integer.parseInt(cursor.getString(0)));
+                    student.setDepartment(cursor.getString(1));
+                    student.setFirstName(cursor.getString(2));
+                    student.setLastName(cursor.getString(3));
+                    student.setAverageMark(cursor.getString(4));
 
-                studentList.add(student);
-            } while (cursor.moveToNext());
+                    studentList.add(student);
+                } while (cursor.moveToNext());
+            } finally {
+                cursor.close();
+            }
+
         }
 
         return studentList;
@@ -122,6 +134,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         String countQuery = "SELECT * FROM " + Util.TABLE_NAME;
         Cursor cursor = db.rawQuery(countQuery, null);
-        return cursor.getCount();
+        int count = -1;
+        try {
+            count = cursor.getCount();
+        } finally {
+            cursor.close();
+        }
+        return count;
     }
 }
